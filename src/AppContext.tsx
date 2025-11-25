@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { User, Transaction, TransactionsByMonth, Template, Tag } from './types';
+import type { User, TransactionsByMonth, Template, Tag } from './types';
 
 type AppContextType = {
   users: User[];
