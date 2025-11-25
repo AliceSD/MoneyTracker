@@ -158,7 +158,7 @@ function App() {
   return (
     <div>
       <header className="header">
-        <img src="/favicon.svg" alt="Logo" width="32" height="32" />
+        <img src="/MoneyTracker/favicon.svg" alt="Logo" width="32" height="32" />
         <span className="header-title">Money Tracker</span>
         <div className="header-controls">
           <UserDropdown users={users} value={selectedUser} onChange={setSelectedUser} />
