@@ -462,7 +462,7 @@ function TemplateModal({ isOpen, onClose }: ModalProps) {
 }
 
 function TagModal({ isOpen, onClose }: ModalProps) {
-  const { tags, setTags, setAlertMessage } = useAppContext();
+  const { tags, setTags, transactionsByMonth, setTransactionsByMonth, templates, setTemplates, setAlertMessage } = useAppContext();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [color, setColor] = useState('');
@@ -499,6 +499,17 @@ function TagModal({ isOpen, onClose }: ModalProps) {
       setTags([...tags, tagData]);
     } else {
       setTags(tags.map(t => t.name === editingName ? tagData : t));
+      // タグ名が変更された場合、トランザクションとテンプレートのタグ名も更新
+      if (editingName !== name) {
+        const updatedTransactions = Object.fromEntries(
+          Object.entries(transactionsByMonth).map(([key, txns]) => [
+            key,
+            txns.map(t => t.tag === editingName ? { ...t, tag: name } : t)
+          ])
+        );
+        setTransactionsByMonth(updatedTransactions);
+        setTemplates(templates.map(t => t.tag === editingName ? { ...t, tag: name } : t));
+      }
     }
     resetForm();
   };
