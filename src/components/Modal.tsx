@@ -45,8 +45,8 @@ function ModalBase({ onClose, children, title, isAlert = false }: {
   onClose: () => void; children: React.ReactNode; title: string; isAlert?: boolean;
 }) {
   return (
-    <div className={`modal-overlay ${isAlert ? 'alert-overlay' : ''}`} onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+    <div className={`modal-overlay ${isAlert ? 'alert-overlay' : ''}`}>
+      <div className="modal">
         <h2 className="modal-title">{title}</h2>
         {children}
       </div>
@@ -59,8 +59,8 @@ function useConfirmModal(onConfirm: () => void) {
   return {
     open: () => setIsOpen(true),
     ConfirmModal: () => isOpen ? (
-      <div className="modal-overlay alert-overlay" onClick={() => setIsOpen(false)}>
-        <div className="modal alert-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-overlay alert-overlay">
+        <div className="modal alert-modal">
           <p className="alert-message">削除してもよろしいですか？</p>
           <div className="modal-buttons">
             <button onClick={() => setIsOpen(false)} className="modal-button secondary">キャンセル</button>
@@ -544,8 +544,8 @@ export function AlertModal() {
   if (!alertMessage) return null;
 
   return (
-    <div className="modal-overlay alert-overlay" onClick={() => setAlertMessage('')}>
-      <div className="modal alert-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay alert-overlay">
+      <div className="modal alert-modal">
         <p className="alert-message">{alertMessage}</p>
         <div className="modal-buttons">
           <button onClick={() => setAlertMessage('')} className="modal-button primary">OK</button>
