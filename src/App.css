@@ -212,6 +212,11 @@
   border-radius: 0 0 12px 12px;
   border: 2px solid var(--color-bg-dark);
   border-top: none;
+  scrollbar-width: none;
+}
+
+.table-body-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .transaction-table {
