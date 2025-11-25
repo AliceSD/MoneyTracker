@@ -41,8 +41,8 @@ type TransactionModalProps = ModalProps & { year: number; month: number; editing
 
 // ==================== 共通コンポーネント ====================
 
-function ModalBase({ onClose, children, title, isAlert = false }: {
-  onClose: () => void; children: React.ReactNode; title: string; isAlert?: boolean;
+function ModalBase({ children, title, isAlert = false }: {
+  children: React.ReactNode; title: string; isAlert?: boolean;
 }) {
   return (
     <div className={`modal-overlay ${isAlert ? 'alert-overlay' : ''}`}>
@@ -130,7 +130,7 @@ export function UserModal({ isOpen, onClose }: ModalProps) {
   };
 
   return (
-    <ModalBase onClose={handleClose} title="新規ユーザー作成">
+    <ModalBase title="新規ユーザー作成">
       <ModalField label="名前">
         <TextInput value={name} onChange={setName} placeholder="名前を入力" />
       </ModalField>
@@ -177,7 +177,7 @@ export function SettingsModal({ isOpen, onClose }: ModalProps) {
 
   return (
     <>
-      <ModalBase onClose={onClose} title="設定">
+      <ModalBase title="設定">
         {selectedUser && (
           <div className="settings-section">
             <h3 className="settings-subtitle">選択中のユーザー設定</h3>
@@ -228,7 +228,7 @@ function RenameModal({ isOpen, onClose, name, setName }: ModalProps & { name: st
   };
 
   return (
-    <ModalBase onClose={onClose} title="名前を変更" isAlert>
+    <ModalBase title="名前を変更" isAlert>
       <ModalField label="新しい名前">
         <TextInput value={name} onChange={setName} placeholder="名前を入力" />
       </ModalField>
@@ -324,7 +324,7 @@ export function TransactionModal({ isOpen, onClose, year, month, editingTransact
   };
 
   return (
-    <ModalBase onClose={handleClose} title={isEditing ? "収支を編集" : "収支を追加"}>
+    <ModalBase title={isEditing ? "収支を編集" : "収支を追加"}>
       {isTemplateMode ? (
         <>
           <ModalField label="テンプレート">
@@ -424,7 +424,7 @@ function TemplateModal({ isOpen, onClose }: ModalProps) {
 
   if (isEditing) {
     return (
-      <ModalBase onClose={() => { resetForm(); onClose(); }} title={isAdding ? "テンプレート追加" : "テンプレート編集"} isAlert>
+      <ModalBase title={isAdding ? "テンプレート追加" : "テンプレート編集"} isAlert>
         <ModalField label="種類"><TypeSelector type={type} setType={setType} /></ModalField>
         <ModalField label="項目名"><TextInput value={item} onChange={setItem} placeholder="項目名を入力" /></ModalField>
         <ModalField label="金額"><AmountInput value={amount} onChange={setAmount} /></ModalField>
@@ -437,7 +437,7 @@ function TemplateModal({ isOpen, onClose }: ModalProps) {
   }
 
   return (
-    <ModalBase onClose={() => { resetForm(); onClose(); }} title="テンプレート編集" isAlert>
+    <ModalBase title="テンプレート編集" isAlert>
       <div className="edit-modal-header">
         <button onClick={() => setEditingItem('')} className="add-text-button">追加</button>
       </div>
@@ -505,7 +505,7 @@ function TagModal({ isOpen, onClose }: ModalProps) {
 
   if (isEditing) {
     return (
-      <ModalBase onClose={() => { resetForm(); onClose(); }} title={isAdding ? "タグ追加" : "タグ編集"} isAlert>
+      <ModalBase title={isAdding ? "タグ追加" : "タグ編集"} isAlert>
         <ModalField label="タグ名"><TextInput value={name} onChange={setName} placeholder="タグ名を入力" /></ModalField>
         <ModalField label="色"><ColorPreset value={color} onChange={setColor} /></ModalField>
         {!isAdding && <button onClick={openConfirm} className="modal-button danger full-width">削除</button>}
@@ -516,7 +516,7 @@ function TagModal({ isOpen, onClose }: ModalProps) {
   }
 
   return (
-    <ModalBase onClose={() => { resetForm(); onClose(); }} title="タグ編集" isAlert>
+    <ModalBase title="タグ編集" isAlert>
       <div className="edit-modal-header">
         <button onClick={() => setEditingName('')} className="add-text-button">追加</button>
       </div>
