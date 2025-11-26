@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dropdown } from './Dropdown';
+import { Dropdown, NumberInputDropdown } from './Dropdown';
 import { TypeSelector, AmountInput, TextInput, ModalField, ModalButtons, ColorPreset, validateAmount } from './Common';
 import { useAppContext } from '../AppContext';
 import type { Transaction, Template, Tag, TransactionType, TransactionsByMonth } from '../types';
@@ -85,10 +85,13 @@ function DateDropdown({ value, year, month, onChange }: {
 }) {
   const daysInMonth = getDaysInMonth(year, month);
   return (
-    <Dropdown
+    <NumberInputDropdown
       value={value}
       options={Array.from({ length: daysInMonth }, (_, i) => ({ value: i + 1, label: `${i + 1}日` }))}
-      onChange={(v) => onChange(v as number)}
+      onChange={onChange}
+      min={1}
+      max={daysInMonth}
+      suffix="日"
       className="full-width"
     />
   );
@@ -383,7 +386,6 @@ export function TransactionModal({ isOpen, onClose, year, month, editingTransact
   const [item, setItem] = useState('');
   const [amount, setAmount] = useState('');
   const [tag, setTag] = useState('');
-  const [isTemplateMode, setIsTemplateMode] = useState(false);
 
   const isEditing = !!editingTransaction;
   const monthKey = getMonthKey(year, month);
@@ -391,11 +393,9 @@ export function TransactionModal({ isOpen, onClose, year, month, editingTransact
 
   const resetForm = () => {
     setType('expense');
-    setDate(new Date().getDate());
     setItem('');
     setAmount('');
     setTag('');
-    setIsTemplateMode(false);
   };
 
   const handleClose = () => { resetForm(); onClose(); };
@@ -459,50 +459,33 @@ export function TransactionModal({ isOpen, onClose, year, month, editingTransact
     setItem(template.item);
     setAmount(template.amount.toString());
     setTag(template.tag || '');
-    setIsTemplateMode(true);
   };
 
   return (
     <ModalBase title={isEditing ? "収支を編集" : "収支を追加"}>
-      {isTemplateMode ? (
-        <>
-          <ModalField label="テンプレート">
-            <div className="template-info">
-              <span className="edit-list-item-name">{item}</span>
-              <span className="edit-list-item-amount">{type === 'expense' ? '-' : '+'}{Number(amount).toLocaleString()}円</span>
-              <TagDisplay tag={tag} type={type} tags={tags} />
-            </div>
-            <button onClick={resetForm} className="template-cancel-button">キャンセル</button>
-          </ModalField>
-          <ModalField label="日付">
-            <DateDropdown value={date} year={year} month={month} onChange={setDate} />
-          </ModalField>
-        </>
-      ) : (
-        <>
-          <ModalField label="種類">
-            <TypeSelector type={type} setType={setType} />
-            <Dropdown
-              value=""
-              options={[{ value: '', label: 'テンプレートを使用' }, ...templates.map(t => ({ value: t.item, label: t.item }))]}
-              onChange={(v) => handleTemplateSelect(v as string)}
-              className="full-width"
-            />
-          </ModalField>
-          <ModalField label="項目名">
-            <TextInput value={item} onChange={setItem} placeholder="項目名を入力" />
-          </ModalField>
-          <ModalField label="金額">
-            <AmountInput value={amount} onChange={setAmount} />
-          </ModalField>
-          <ModalField label="日付">
-            <DateDropdown value={date} year={year} month={month} onChange={setDate} />
-          </ModalField>
-          <ModalField label="タグ">
-            <TagDropdown value={tag} tags={tags} onChange={setTag} />
-          </ModalField>
-        </>
-      )}
+      <ModalField label="テンプレート">
+        <Dropdown
+          value=""
+          options={[{ value: '', label: 'テンプレートを使用' }, ...templates.map(t => ({ value: t.item, label: t.item }))]}
+          onChange={(v) => handleTemplateSelect(v as string)}
+          className="full-width"
+        />
+      </ModalField>
+      <ModalField label="種類">
+        <TypeSelector type={type} setType={setType} />
+      </ModalField>
+      <ModalField label="項目名">
+        <TextInput value={item} onChange={setItem} placeholder="項目名を入力" />
+      </ModalField>
+      <ModalField label="金額">
+        <AmountInput value={amount} onChange={setAmount} />
+      </ModalField>
+      <ModalField label="日付">
+        <DateDropdown value={date} year={year} month={month} onChange={setDate} />
+      </ModalField>
+      <ModalField label="タグ">
+        <TagDropdown value={tag} tags={tags} onChange={setTag} />
+      </ModalField>
       {isEditing && <button onClick={openConfirm} className="modal-button danger full-width">削除</button>}
       <ModalButtons onCancel={handleClose} onSubmit={handleSubmit} submitText={isEditing ? "保存" : "追加"} />
       <ConfirmModal />

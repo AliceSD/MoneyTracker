@@ -54,12 +54,67 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 10em;
+  width: 11em;
   justify-content: space-between;
 }
 
 .dropdown-arrow {
   font-size: 0.7rem;
+  padding: 0 12px;
+  margin: -8px -12px -8px auto;
+  border-left: 1px solid var(--color-bg-dark);
+  height: calc(100% + 16px);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dropdown-input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-primary);
+  background-color: var(--color-bg-light);
+  color: var(--color-text);
+  font-size: 1rem;
+  height: 38px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dropdown-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(162, 64, 112, 0.2);
+}
+
+.dropdown-input::-webkit-outer-spin-button,
+.dropdown-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.dropdown-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.dropdown-number-input {
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 1rem;
+  width: 100%;
+  padding: 0;
+  outline: none;
+}
+
+.dropdown-number-input::-webkit-outer-spin-button,
+.dropdown-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.dropdown-number-input[type=number] {
+  -moz-appearance: textfield;
 }
 
 .dropdown-menu {
@@ -71,7 +126,7 @@ html, body {
   box-shadow: 0 4px 12px rgba(162, 64, 112, 0.2);
   border: 1px solid var(--color-bg-dark);
   overflow-y: auto;
-  width: 10em;
+  width: 11em;
   max-height: 200px;
   z-index: 1001;
   scrollbar-width: none;
@@ -468,6 +523,16 @@ html, body {
   border-color: var(--color-primary);
 }
 
+.modal-input::-webkit-outer-spin-button,
+.modal-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.modal-input[type=number] {
+  -moz-appearance: textfield;
+}
+
 .modal-buttons {
   display: flex;
   gap: 12px;
@@ -787,13 +852,13 @@ html, body {
   }
 
   .dropdown-button {
-    width: 8em;
+    width: 9em;
     padding: 6px 10px;
     font-size: 0.85rem;
   }
 
   .dropdown-menu {
-    width: 8em;
+    width: 9em;
   }
 
   .main-content {
