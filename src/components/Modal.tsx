@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dropdown } from './Dropdown';
 import { TypeSelector, AmountInput, TextInput, ModalField, ModalButtons, ColorPreset, validateAmount } from './Common';
 import { useAppContext } from '../AppContext';
-import type { Transaction, Template, Tag, TransactionType } from '../types';
+import type { Transaction, Template, Tag, TransactionType, TransactionsByMonth } from '../types';
 
 // ==================== ヘルパー関数 ====================
 
@@ -142,12 +142,127 @@ export function UserModal({ isOpen, onClose }: ModalProps) {
   );
 }
 
+type ImportData = {
+  user: { name: string; balance: number };
+  transactions: TransactionsByMonth;
+  templates?: Template[];
+  tags?: Tag[];
+  exportedAt?: string;
+};
+
 export function SettingsModal({ isOpen, onClose }: ModalProps) {
-  const { users, setUsers, selectedUser, setSelectedUser, mainUser, setMainUser, setAlertMessage } = useAppContext();
+  const { users, setUsers, selectedUser, setSelectedUser, mainUser, setMainUser, transactionsByMonth, setTransactionsByMonth, templates, setTemplates, tags, setTags, setAlertMessage } = useAppContext();
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [isTagOpen, setIsTagOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [importData, setImportData] = useState<ImportData | null>(null);
+  const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false);
+
+  // エクスポート機能（Base64）
+  const handleExport = () => {
+    if (!selectedUser) return;
+    const data = {
+      user: users.find(u => u.name === selectedUser),
+      transactions: transactionsByMonth,
+      templates,
+      tags,
+      exportedAt: new Date().toISOString(),
+    };
+    const jsonStr = JSON.stringify(data);
+    const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    const blob = new Blob([base64], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `money-tracker-${selectedUser}-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setAlertMessage('エクスポートが完了しました');
+  };
+
+  // インポート実行
+  const executeImport = (data: ImportData) => {
+    const existingUser = users.find(u => u.name === data.user.name);
+    if (existingUser) {
+      setTransactionsByMonth(data.transactions);
+      if (data.templates) setTemplates(data.templates);
+      if (data.tags) setTags(data.tags);
+      setSelectedUser(data.user.name);
+    } else {
+      setUsers([...users, data.user]);
+      setSelectedUser(data.user.name);
+      setTimeout(() => {
+        setTransactionsByMonth(data.transactions);
+        if (data.templates) setTemplates(data.templates);
+        if (data.tags) setTags(data.tags);
+      }, 100);
+    }
+    setAlertMessage('インポートが完了しました');
+  };
+
+  // インポート機能（Base64）
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const base64 = event.target?.result as string;
+          const jsonStr = decodeURIComponent(escape(atob(base64.trim())));
+          const data = JSON.parse(jsonStr) as ImportData;
+          // データの検証
+          if (!data.user || !data.transactions) {
+            setAlertMessage('無効なファイル形式です');
+            return;
+          }
+          // 既存ユーザーかチェック
+          const existingUser = users.find(u => u.name === data.user.name);
+          if (existingUser) {
+            // 既存データを取得して比較
+            const existingTransactions = localStorage.getItem(`${data.user.name}_transactions`);
+            const existingTemplates = localStorage.getItem(`${data.user.name}_templates`);
+            const existingTags = localStorage.getItem(`${data.user.name}_tags`);
+
+            const hasTransactionsDiff = existingTransactions && JSON.stringify(data.transactions) !== existingTransactions;
+            const hasTemplatesDiff = existingTemplates && data.templates && JSON.stringify(data.templates) !== existingTemplates;
+            const hasTagsDiff = existingTags && data.tags && JSON.stringify(data.tags) !== existingTags;
+
+            if (hasTransactionsDiff || hasTemplatesDiff || hasTagsDiff) {
+              // 差分がある場合は確認画面を表示
+              setImportData(data);
+              setIsImportConfirmOpen(true);
+              return;
+            }
+          }
+          // 差分がない、または新規ユーザーの場合はそのままインポート
+          executeImport(data);
+        } catch {
+          setAlertMessage('ファイルの読み込みに失敗しました');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  // インポート確認後の処理
+  const handleImportConfirm = () => {
+    if (importData) {
+      executeImport(importData);
+    }
+    setIsImportConfirmOpen(false);
+    setImportData(null);
+  };
+
+  const handleImportCancel = () => {
+    setIsImportConfirmOpen(false);
+    setImportData(null);
+  };
 
   const handleDeleteUser = () => {
     if (!selectedUser) return;
@@ -172,6 +287,7 @@ export function SettingsModal({ isOpen, onClose }: ModalProps) {
     { label: 'メインユーザーにする', action: () => setMainUser(selectedUser), text: isMainUser ? '設定済み' : '設定', disabled: isMainUser },
     { label: 'テンプレートを編集', action: () => setIsTemplateOpen(true), text: '編集' },
     { label: 'タグを編集', action: () => setIsTagOpen(true), text: '編集' },
+    { label: 'データをエクスポート', action: handleExport, text: '保存' },
     { label: '削除する', action: handleDeleteClick, text: '削除', danger: true },
   ];
 
@@ -197,6 +313,15 @@ export function SettingsModal({ isOpen, onClose }: ModalProps) {
             ))}
           </div>
         )}
+        <div className="settings-section">
+          <h3 className="settings-subtitle">データ管理</h3>
+          <div className="modal-field">
+            <div className="settings-row">
+              <span className="settings-label">データをインポート</span>
+              <button onClick={handleImport} className="settings-action-button">読込</button>
+            </div>
+          </div>
+        </div>
         <div className="modal-buttons">
           <button onClick={onClose} className="modal-button primary">閉じる</button>
         </div>
@@ -205,6 +330,20 @@ export function SettingsModal({ isOpen, onClose }: ModalProps) {
       <TemplateModal isOpen={isTemplateOpen} onClose={() => setIsTemplateOpen(false)} />
       <TagModal isOpen={isTagOpen} onClose={() => setIsTagOpen(false)} />
       <ConfirmModal />
+      {isImportConfirmOpen && (
+        <div className="modal-overlay alert-overlay">
+          <div className="modal alert-modal">
+            <p className="alert-message">
+              「{importData?.user.name}」のデータが既に存在します。<br />
+              上書きしてもよろしいですか？
+            </p>
+            <div className="modal-buttons">
+              <button onClick={handleImportCancel} className="modal-button secondary">キャンセル</button>
+              <button onClick={handleImportConfirm} className="modal-button primary">上書き</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
