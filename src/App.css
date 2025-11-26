@@ -7,6 +7,11 @@
   --color-text-light: #ffe4ec;
 }
 
+html, body {
+  overflow: hidden;
+  height: 100%;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -127,9 +132,12 @@
 }
 
 .main-content {
-  margin-top: 60px;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   padding: 20px;
-  height: calc(100vh - 60px);
   overflow: hidden;
 }
 
@@ -789,7 +797,7 @@
   }
 
   .main-content {
-    margin-top: 100px;
+    top: 100px;
     overflow-y: auto;
     padding-bottom: 40px;
   }
